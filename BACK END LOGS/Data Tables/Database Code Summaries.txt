@@ -1,0 +1,181 @@
+	SQLUSER:WinMonitor_Login
+	SQLPASS : $winmonitor123
+--------------------------------------------------------
+	SQLDATABASE: WinMonitor_Database;
+---------------------------------------------------------
+------------------------------------------------------
+
+	1.Creating table:DBCompany
+-----------------------------------------------------------
+create table DBCompany(
+		DBCompanyId varchar(50) constraint CPK primary key,
+		DBCompanyName varchar(50),
+		DBURL varchar(50),
+	)
+-----------------------------------------------------------
+	2.Creating table:DBComponent_With_Status
+----------------------------------------------------------
+create table DBComponent_With_Status(
+		DBCSId varchar(50) constraint CWSPK primary key,
+		DBComponentName varchar(50),
+		DBStatus varchar(50) constraint CWSCHKStatus check(DBStatus in('Operational','Minor','Major')),
+		DBType varchar(50) constraint CWSCHKType check(DBType in('Master','Specific')),
+		DBCompanyId varchar(50) ,
+		DBMasterComponentName varchar(50) ,
+		foreign key(DBMasterComponentName) references DBMaster_DBComponent_With_Status		(DBMasterComponentName),
+		foreign key (DBCompanyId) references DBCompany(DBCompanyId);
+	)
+-----------------------------------------------------------
+	3.Creating table:DBIncidents
+----------------------------------------------------------
+create table DBIncidents(
+	DBIncidentId varchar(50) constraint IPK primary key,
+	DBIncidentName varchar(50),
+	DBCSId varchar(50),
+	foreign key (DBCSId) references DBComponent_With_Status(DBCSId)
+);
+-----------------------------------------------------------
+	4.Creating table:DBLogin
+----------------------------------------------------------
+create table DBLogin
+(
+DBUsername varchar(50) constraint LPK primary key,
+DBPassword varchar(50)
+);
+-----------------------------------------------------------
+	5.Creating table:DBSubscriptions
+----------------------------------------------------------
+create table DBSubscriptions
+(
+DBSubscriptionsId varchar(50) constraint SPK primary key,
+DBName varchar(50),
+DBEmail varchar(50),
+DBPhone varchar(50),
+DBType varchar(50) constraint SCHKType check(DBType IN ('SMS','Email'))
+)
+
+
+-------------------------------------------------------------
+	6. Creating table: DBMaster_DBComponent_With_Status
+---------------------------------------------------------------
+create table DBMaster_DBComponent_With_Status
+(
+DBMasterComponentName varchar(50) constraint MPK primary key
+);
+
+
+==============================================================================================
+==============================================================================================
+UPDATES IN TABLES
+==============================================================================================
+==============================================================================================
+
+-----------------------------------------------------------------------
+Company Table
+-----------------------------------------------------------------------
+alter table DBCompany
+add constraint CUN unique (DBURL);  
+
+-------------------------------------------------------------------------
+Incident Table
+-------------------------------------------------------------------------
+alter table DBIncidents
+add DBDescription varchar(200);
+go
+alter table DBIncidents
+add constraint IUN unique (DBCSId);
+
+--------------------------------------------------------------------------
+Login Table
+--------------------------------------------------------------------------
+alter table DBLogin
+add DBAccountType varchar(50) constraint LCHKAccountType check(DBAccountType in('Edit','View'));
+
+-----------------------------------------------------------------------------
+Components with status Change
+-----------------------------------------------------------------------------
+alter table DBComponent_With_Status
+add constraint CWSUN unique(DBMasterComponentName);
+
+=======================================================================================================
+=======================================================================================================
+Indexes
+=======================================================================================================
+=======================================================================================================
+
+1. CompanyName
+-------------------------------------------------------------
+   create index indexDBCompanyName
+   on DBCompany (DBCompanyName);
+
+2. IncidentName
+-------------------------------------------------------------
+   create index indexDBIncidentName
+   on DBIncidents (DBIncidentName);
+
+
+=======================================================================================================
+=======================================================================================================
+Sequences
+=======================================================================================================
+=======================================================================================================
+
+1. For Company Id
+----------------------------------------------
+create sequence seqDBCompanyId
+as integer
+start with 1
+increment by 1
+minvalue 1
+maxvalue 99999999
+cycle
+no cache
+;
+
+2. For MasterComponentandStatus Id
+---------------------------------------------
+create sequence seqMasterDBCSId
+as integer
+start with 1
+increment by 1
+minvalue 1
+maxvalue 99999999
+cycle
+no cache
+;
+
+3. For SpecificComponentandStatus Id
+----------------------------------------------
+create sequence seqSpecificDBCSId
+as integer
+start with 1
+increment by 1
+minvalue 1
+maxvalue 99999999
+cycle
+no cache
+;
+
+4. For Incident Id
+---------------------------------------------
+create sequence seqDBIncidentId
+as integer
+start with 1
+increment by 1
+minvalue 1
+maxvalue 99999999
+cycle
+no cache
+;
+
+5. For Subscription Id
+--------------------------------------------------
+create sequence seqDBSubscriptionsId
+as integer
+start with 1
+increment by 1
+minvalue 1
+maxvalue 99999999
+cycle
+no cache
+;
